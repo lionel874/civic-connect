@@ -32,6 +32,10 @@ Le but de cette application est de permettre aux étudiants camerounais d'avoir 
 * Users(Les étudiants / clients)
 * L'administrateur.
 
+DIAGRAMME DE DOMAINE
+<img width="901" height="627" alt="diagramme de domaine" src="https://github.com/user-attachments/assets/c13c71b1-044c-4362-a20a-c26944d089b7" />
+
+
 
 ## 3. Définir le MVP
 
