@@ -1,11 +1,14 @@
-class Service:
-    def __init__(self,id_s,nom_s,description,prix_s, location_id):
-        self.id_s = id_s
-        self.nom_s =nom_s
-        self.description = description
-        self.prix_s = prix_s
-        self.location_id =location_id
+from sqlalchemy import String
+from sqlalchemy.orm import Mapped, mapped_column
+from database import Base
+from sqlalchemy import ForeignKey
 
-    def affichage_service(self):
-        print("identifiant_s :", self.id_s, "nom servive :",self.nom_s,
-              "description :",self.description, "prix_service :",self.prix_s,"localisation :",self.location_id)
+class Service(Base) :
+    __tablename__ = "service"
+
+    id_s: Mapped[int] = mapped_column(primary_key=True,autoincrement=True)
+    nom_s: Mapped[str] = mapped_column(String(20))
+    description: Mapped[str] = mapped_column(String(50))
+    prix: Mapped[str] = mapped_column (String(10))
+    user_id: Mapped[int] = mapped_column(ForeignKey("user.id"))
+    location_id: Mapped[int]= mapped_column(ForeignKey("location.id_l"))

@@ -1,14 +1,25 @@
+from sqlalchemy.orm import Session
 from CLASS.product import Product
+from database import engine
 
-class Product_controller:
-    def __init__(self):
-        self.products = []
+def ajoute_p(nom, prix, quantite):
+    with Session(engine) as session:
+        produit = Product(nom_p=nom,
+                          prix_p = prix,
+                          quantite_p = quantite)
 
-    def ajouter_produit(self, product):
-        self.products.append(product)
+        session.add(produit)
+        session.commit()
 
-    def modif_product(self,id_p, new_nom, new_prix, new_quantite):
-        for product in self.products :
-            if id_p == id_p:
-                nom_p.product = new_nom
-                
+        print("produit ajoute")
+
+def modifier_produit(produit_id, nouveau_prix,nouvelle_qte):
+    with Session(engine) as session:
+        produit = session.get(Product,produit_id)
+        if produit is None:
+            print("produit introuvable")
+            return
+        produit.prix_p = nouveau_prix
+        produit.quantite_p = nouvelle_qte
+
+        session.commit()

@@ -1,11 +1,13 @@
-class Report:
-    def __init__(self,titre,description_r, user_id,location_id):
-        self.titre = titre
-        self.description_r = description_r
-        self.user_id = user_id
-        self.location_id =location_id
+from sqlalchemy import String
+from sqlalchemy.orm import Mapped, mapped_column
+from database import Base
+from sqlalchemy import ForeignKey,String
 
-    def afiichage_report(self):
-        print("titre :",self.titre , "description :",self.description_r,
-              "id_user",self.user_id, "localisation",self.location_id)
-        
+class Report :
+    __tablename__ = "report"
+
+    id_r: Mapped[int]=mapped_column(primary_key=True)
+    titre: Mapped[str] = mapped_column(String(20))
+    description: Mapped[str] = mapped_column(String(50))
+    user_id: Mapped[int] = mapped_column(ForeignKey("user.id"))
+    location_id: Mapped[int] = mapped_column(ForeignKey("loxation.id"))

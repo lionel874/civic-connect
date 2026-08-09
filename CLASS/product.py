@@ -1,10 +1,11 @@
-class Product:
-    def __init__(self,id_p,nom_p,prix_p,quantite_p):
-        self.id_p =id_p
-        self.nom_p = nom_p
-        self.prix_p = prix_p
-        self.quantite_p = quantite_p
+from sqlalchemy import String,Float
+from sqlalchemy.orm import Mapped,mapped_column
+from database import Base
 
-    def affichage_product(self):
-        print("identifiant_produit :",self.id_p ,"nom_produit:",self.nom_p, "prix :",self.prix,
-              "quantite :",self.quantite_p)
+class Product(Base):
+    __tablename__ = "product"
+
+    id_p: Mapped[int]= mapped_column(primary_key=True, autoincrement=True)
+    nom_p: Mapped[str]= mapped_column(String(15))
+    prix_p: Mapped[str]= mapped_column(String(10))
+    quantite_p: Mapped[str] = mapped_column(String(5))
