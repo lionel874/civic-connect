@@ -27,8 +27,7 @@ def ajout_localisation( ville, quartier, adresse, longitude,latitude,db_engine=e
                  raise ValueError("L'adresse doit être une chaîne de caractères")
         if not isinstance(longitude, str):
                 raise ValueError("Le longitude doit être une chaîne de caractères")
-        if not isinstance(latitude, str):
-                   raise ValueError("Le latitude doit être une chaîne de caractères")
+        
                 
                 
                 

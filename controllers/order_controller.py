@@ -4,7 +4,7 @@ from database import engine
 from CLASS.users import User
 from CLASS.product import Product
 
-def ajout_order( nom, quantite, mte, user_id, product_id,db_engine=engine):
+def ajout_order( titre, quantite, mte, user_id, product_id,db_engine=engine):
     with Session(db_engine) as session:
         user = session.get(User, user_id)
 
@@ -20,7 +20,7 @@ def ajout_order( nom, quantite, mte, user_id, product_id,db_engine=engine):
 
 
         command = Order(
-                        nom_o = nom,
+                        titre_o = titre,
                         quantite_o = quantite,
                         mte_total= mte,
                         user_id = user_id,

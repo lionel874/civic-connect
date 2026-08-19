@@ -9,7 +9,6 @@ class Location(Base) :
     ville: Mapped[str] = mapped_column(String(20))
     quartier: Mapped[str] = mapped_column(String(20))
     adresse: Mapped[str]= mapped_column(String(10))
-    longitude: Mapped[str]= mapped_column(String(10))
-    latitude: Mapped[str] = mapped_column(String(20))
+    
 
     
