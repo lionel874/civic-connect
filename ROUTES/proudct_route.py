@@ -1,7 +1,7 @@
 from fastapi import APIRouter, Depends
 from sqlalchemy.orm import Session
 from database import SessionLocal
-from SERVICES.product_service import ajout_p
+from SERVICES.product_service import ajout_produit_service
 
 router = APIRouter(
     prefix= "/produit",
@@ -22,7 +22,7 @@ def create_product(nom: str,
                    prix: str,
                    quantite:str,
                    db: Session = Depends(get_db)):
-    return ajout_p(nom,
+    return ajout_produit_service(nom,
                    prix,
                    quantite,
                    db)

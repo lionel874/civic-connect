@@ -9,3 +9,7 @@ def create_service(service: Service, session:Session):
         session.commit()
         session.refresh(service)
         return service
+
+
+def lire_service_repository(session: Session):
+      return session.query(Service).all()

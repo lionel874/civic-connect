@@ -9,3 +9,6 @@ def create_location_repository(localisation:Location, session:Session):
         session.commit()
         session.refresh(localisation)
         return localisation 
+
+def lire_localisation_repository(session: Session):
+      return session.query(Location).all()

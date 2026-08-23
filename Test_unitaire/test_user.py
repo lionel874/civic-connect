@@ -1,9 +1,11 @@
 from sqlalchemy.orm import Session
 import unittest
-from database import Base, engine
+from database import Base
 from CLASS.users import User
-from controllers.user_controller import ajout_user
 from sqlalchemy import create_engine
+from SERVICES.user_service import (ajout_user,
+                                   lire_users_service,
+                                   supprimer_user_service)
 
 test_engine = create_engine(
     "sqlite:///test_database/test_civic_connect.db"
@@ -12,7 +14,7 @@ Base.metadata.create_all(test_engine)
 
 
 
-class TestAjoutUser(unittest.TestCase):
+class TestUserService(unittest.TestCase):
     
 # user ajouter normalement
 
@@ -26,6 +28,7 @@ class TestAjoutUser(unittest.TestCase):
         self.assertIsNotNone(utilisateur)
         
 # test lorsque le parametre nom est vide
+
     def test_nom_vide(self):
       with Session(test_engine) as session:
         with self.assertRaises(ValueError):
@@ -136,11 +139,6 @@ class TestAjoutUser(unittest.TestCase):
 
 
 
-    
-
-
-
-
 # test email inavalide
 
     def test_email_invalide(self):
@@ -183,6 +181,111 @@ class TestAjoutUser(unittest.TestCase):
         print(utilisateurs)
 
         self.assertGreater(len(utilisateurs), 0)
+
+
+
+    # test pour lire tous les utilisateur
+
+    def test_lire_users(self):
+
+        with Session(test_engine) as session:
+
+            user1 = User(
+                nom="User1",
+                prenom="Test",
+                email="user1@gmail.com",
+                tel="680000001",
+                role="user"
+            )
+
+            user2 = User(
+                nom="User2",
+                prenom="Test",
+                email="user2@gmail.com",
+                tel="680000002",
+                role="admin"
+            )
+
+            session.add_all([
+                user1,
+                user2
+            ])
+
+            session.commit()
+
+            utilisateurs = lire_users_service(session)
+
+            self.assertIsNotNone(utilisateurs)
+
+            self.assertIn(user1, utilisateurs)
+
+            self.assertIn(user2, utilisateurs)
+
+
+    def test_lire_users_base_vide(self):
+
+        with Session(test_engine) as session:
+
+            # On supprime les utilisateurs présents
+            session.query(User).delete()
+            session.commit()
+
+            utilisateurs = lire_users_service(session)
+
+            self.assertEqual(
+                utilisateurs,
+                []
+            ) 
+
+
+
+# test supprimer user
+    def test_supprimer_user(self):
+
+        with Session(test_engine) as session:
+
+            utilisateur = User(
+                nom="u1",
+                prenom="pp",
+                email="u1@gmail.com",
+                tel="680000003",
+                role="user"
+            )
+
+            session.add(utilisateur)
+
+            session.commit()
+
+            session.refresh(utilisateur)
+
+            user_id = utilisateur.id
+
+            supprimer_user_service(
+                user_id,
+                session
+            )
+
+            utilisateur_supprime = session.get(
+                User,
+                user_id
+            )
+
+            self.assertIsNone(
+                utilisateur_supprime
+            )
+
+
+    def test_supprimer_user_inexistant(self):
+
+        with Session(test_engine) as session:
+
+            with self.assertRaises(ValueError):
+
+                supprimer_user_service(
+                    999999,
+                    session
+                )
+
 
 if __name__ == "__main__":
     unittest.main()

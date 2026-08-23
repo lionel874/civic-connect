@@ -36,3 +36,28 @@ def modif_user_repository(utilisateur: User, session:Session):
          session.refresh(user)
 
          return user
+
+
+
+#lire tout les user dans la bd 
+
+
+def lire_users_repository(session: Session):
+      return session.query(User).all()
+
+
+# supprimer un user a paertie de son id
+
+ 
+def supprimer_user_repository(user_id: int, session: Session):
+
+    utilisateur = session.get(User, user_id)
+
+    if utilisateur is None:
+        return None
+
+    session.delete(utilisateur)
+    session.commit()
+
+    return utilisateur 
+

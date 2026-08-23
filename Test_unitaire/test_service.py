@@ -2,7 +2,7 @@ from sqlalchemy.orm import Session
 from database import Base
 from CLASS.users import User
 from CLASS.location import Location
-from controllers.service_controller import ajout_service
+from SERVICES.services_service import lire_service_service,ajout_service
 import unittest
 from sqlalchemy import create_engine
 
@@ -32,8 +32,7 @@ class TestAjoutService(unittest.TestCase):
                 ville="Dschang",
                 quartier="Centre",
                 adresse="Rue 1",
-                longitude="10.1",
-                latitude="5.4"
+                
             )
 
             session.add(user)
@@ -43,7 +42,7 @@ class TestAjoutService(unittest.TestCase):
             session.refresh(user)
             session.refresh(location)
 
-            service = ajout_service(
+            service = (
                 "service-1",
                 "internet haut debit",
                 "5000",
@@ -57,6 +56,65 @@ class TestAjoutService(unittest.TestCase):
                 service.description,
                 "internet haut debit")
 
+
+
+    def test_lire_services(self):
+
+     with Session(test_engine) as session:
+
+        service = ajout_service(
+            nom_s="service-1",
+            description="description",
+            prix=100
+        )
+
+        session.add(service)
+        session.commit()
+
+        services = lire_service_service(session)
+
+        self.assertIsInstance(services, list)
+        self.assertGreater(len(services), 0)
+
+
+    # lire les tous service
+
+    def test_lire_services(self):
+
+     with Session(test_engine) as session:
+
+        user = User(
+            nom="moudouthe",
+            prenom="lionel",
+            email="lecture_service@gmail.com",
+            tel="680048703",
+            role="admin"
+        )
+
+        localisation = Location(
+            ville="dschang",
+            quartier="tchouale",
+            adresse="rue-456"
+        )
+
+        session.add(user)
+        session.add(localisation)
+        session.commit()
+
+        service = ajout_service(
+            "service-1",
+            "description service",
+            100,
+            user.id,
+            localisation.id_l,
+            session
+        )
+
+        services = lire_service_service(session)
+
+        self.assertIsInstance(services, list)
+        self.assertGreater(len(services), 0)
+        self.assertIn(service, services)
 
 if __name__ == "__main__":
     unittest.main()

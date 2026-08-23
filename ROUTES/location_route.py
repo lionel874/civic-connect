@@ -1,7 +1,7 @@
 from fastapi import APIRouter, Depends
 from sqlalchemy.orm import Session
 from database import SessionLocal
-from SERVICES.location_service import ajout_localisation
+from SERVICES.location_service import ajout_localisation_service,lire_localisation_service
 
 
 router = APIRouter(
@@ -23,4 +23,4 @@ def create_location(ville: str,
                     quartier:str,
                     adresse: str,
                     session: Session = Depends(get_db)):
-    return ajout_localisation(ville, quartier, adresse, session)
+    return ajout_localisation_service(ville, quartier, adresse, session)

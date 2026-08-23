@@ -1,9 +1,10 @@
 
 from CLASS.users import User
 from REPOSITORIES.user_repository import create_user
-from REPOSITORIES.user_repository import modif_user_repository,identifier_user_par_id
+from REPOSITORIES.user_repository import modif_user_repository,identifier_user_par_id,lire_users_repository
+from REPOSITORIES.user_repository import supprimer_user_repository
 from sqlalchemy.orm import Session
-def ajout_user(nom, prenom, email, tel, role):
+def ajout_user(nom, prenom, email, tel, role, session:Session):
     
         if not nom:
             raise ValueError("le nom est obligatoire")
@@ -61,9 +62,10 @@ def ajout_user(nom, prenom, email, tel, role):
                            prenom=prenom,
                            email=email,
                            tel=tel,
-                           role=role)
+                           role=role,
+                           )
         
-        return create_user(utilisateur)
+        return create_user(utilisateur,session)
 
 
 def modifier_user_service(
@@ -104,6 +106,62 @@ def modifier_user_service(
     utilisateur.email = nouveau_email
     utilisateur.tel = nouveau_tel
     utilisateur.role = nouveau_role
+
+    return modif_user_repository(
+        utilisateur,
+        session
+    )
+
+
+# fonction qui L'ensemble des utilisateur
+
+def lire_users_service(session:Session):
+   return lire_users_repository (session)
+
+# fonction supprimer un utilisateur a parti de son id
+
+
+def supprimer_user_service(user_id: int, session: Session):
+
+    utilisateur = identifier_user_par_id(user_id, session)
+
+    if utilisateur is None:
+        raise ValueError("Utilisateur introuvable")
+
+    return supprimer_user_repository(user_id, session)
+
+def patch_user_service(
+    user_id,
+    nouveau_nom=None,
+    nouveau_prenom=None,
+    nouveau_email=None,
+    nouveau_tel=None,
+    nouveau_role=None,
+    session: Session = None
+):
+
+    utilisateur = identifier_user_par_id(
+        user_id,
+        session
+    )
+
+    if utilisateur is None:
+        raise ValueError("Utilisateur introuvable")
+
+    if nouveau_nom is not None:
+        utilisateur.nom = nouveau_nom
+
+    if nouveau_prenom is not None:
+        utilisateur.prenom = nouveau_prenom
+
+    if nouveau_email is not None:
+        utilisateur.email = nouveau_email
+
+    if nouveau_tel is not None:
+        utilisateur.tel = nouveau_tel
+
+    if nouveau_role is not None:
+        utilisateur.role = nouveau_role
 
     return modif_user_repository(
         utilisateur,

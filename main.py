@@ -6,10 +6,10 @@ from ROUTES.proudct_route import router as product_router
 from ROUTES.service_route import router as service_router
 from ROUTES.order_route import router as order_router
 from ROUTES.report_route import router as report_router
-
-
+from database import Base,engine
+from CLASS.report import Report
 app = FastAPI()
-
+Base.metadata.create_all(bind=engine)
 
 app.include_router(user_router)
 app.include_router(location_router)

@@ -1,8 +1,9 @@
-from REPOSITORIES.location_repository import create_location_repository
+from REPOSITORIES.location_repository import (create_location_repository,
+                                              lire_localisation_repository)
 from CLASS.location import Location
 from sqlalchemy.orm import Session
 
-def ajout_localisation( ville, quartier, adresse, session:Session):
+def ajout_localisation_service( ville, quartier, adresse, session:Session):
     
         if not ville:
             raise ValueError(" la ville est obligatoire")
@@ -29,5 +30,12 @@ def ajout_localisation( ville, quartier, adresse, session:Session):
                                         adresse = adresse
                                         )
         return create_location_repository(localisation,session)
+
+# lire toute les localisation
+
+def lire_localisation_service(session:Session):
+   return lire_localisation_repository (session)
+
+
 
         

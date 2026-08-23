@@ -1,8 +1,14 @@
-from REPOSITORIES.report_repospitory import create_report_repository
+from REPOSITORIES.report_repository import create_report_repository
 from sqlalchemy.orm import Session
 from CLASS.location import Location
 from CLASS.report import Report
 from CLASS.users import User
+from REPOSITORIES.report_repository import(
+    identifier_report_par_id,
+    lire_report_repository,
+    supprimer_report_repository
+)
+
 
 # logique metier de signalement
 def ajout_report_service(id_r, 
@@ -13,10 +19,10 @@ def ajout_report_service(id_r,
                          session:Session):
 
     # verification du titre
-          if titre is None or isinstance(titre,str):
+          if titre is None or not isinstance(titre,str):
             raise ValueError("le titre doit etre une chaine")
     # verification du titre
-          if description is None or isinstance(titre,str):
+          if description is None or not isinstance(titre,str):
                   raise ValueError("le description doit etre une chaine")
 
 
@@ -45,3 +51,44 @@ def ajout_report_service(id_r,
                                 location_id = location_id)
 
           return create_report_repository(signalment, session)
+
+# lire les signalement
+
+def lire_report_service(session: Session):
+
+    return lire_report_repository(session)
+
+# identifier un signalement
+def identifier_report_service(
+    report_id: int,
+    session: Session
+):
+
+    report = identifier_report_par_id(
+        report_id,
+        session
+    )
+
+    if report is None:
+        raise ValueError("Report introuvable")
+
+    return report
+
+
+def supprimer_report_service(
+    report_id: int,
+    session: Session
+):
+
+    report = identifier_report_par_id(
+        report_id,
+        session
+    )
+
+    if report is None:
+        raise ValueError("Report introuvable")
+
+    return supprimer_report_repository(
+        report_id,
+        session
+    )

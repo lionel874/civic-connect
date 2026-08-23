@@ -2,7 +2,7 @@ from sqlalchemy.orm import Session
 from CLASS.users import User
 
 from CLASS.service import Service
-from REPOSITORIES.service_repository import create_service
+from REPOSITORIES.service_repository import create_service,lire_service_repository
 
 
 def ajout_service(
@@ -64,3 +64,10 @@ def ajout_service(
 
     # Enregistrement via le repository
     return create_service(service, session)
+
+
+# lire les service
+
+def lire_service_service(session: Session):
+
+    return lire_service_repository(session)
