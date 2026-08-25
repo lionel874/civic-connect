@@ -1,7 +1,7 @@
-from fastapi import APIRouter, Depends
-from sqlalchemy.orm import Session
-from database import SessionLocal
-from SERVICES.services_service import ajout_service,lire_service_service
+from fastapi import APIRouter
+from SERVICES.services_service import (ajout_service,
+                                       lire_service_service,
+                                       supprimer_service_service)
 
 
 router = APIRouter(
@@ -10,12 +10,7 @@ router = APIRouter(
 )
 
 
-def get_db():
-    db = SessionLocal()
-    try :
-        yield db
-    finally:
-        db.close()
+
 
 
 @router.post("/")
@@ -25,13 +20,21 @@ def create_service_route(nom_s:str,
                    description:str,
                    prix: float,
                    user_id: int,
-                   location_id: int,
-                   db: Session = Depends(get_db)):
+                   location_id: int
+                   ):
     return ajout_service(
         nom_s,
         description,
         prix,
         user_id,
         location_id,
-        db
+        
     )
+
+@router.get("/")
+def get_users():
+  return lire_service_service()
+
+@router.delete("/{service_id}")
+def delete_user(service_id:int ):
+    return supprimer_service_service(service_id)

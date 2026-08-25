@@ -1,4 +1,4 @@
-from sqlalchemy.orm import Session
+from database import SessionLocal
 from CLASS.users import User
 
 
@@ -6,58 +6,131 @@ from CLASS.users import User
 
 # creation d'un user dans la base de donnee
 
-def create_user(utilsateur:User, session:Session):
-    
-     session.add(utilsateur)
-     session.commit()
-     session.refresh(utilsateur)
+def create_user(utilsateur):
+    db =SessionLocal()
+    try:
+     db.add(utilsateur)
+     db.commit()
+     db.refresh(utilsateur)
      return utilsateur
+    finally:
+        db.close()
 
-def identifier_user_par_id(user_id:int, session:Session ):
-   
-      utilisateur = session.get(User,user_id)
+def identifier_user_par_id(user_id:int ): 
+      db =SessionLocal()
+      try:
+        utilisateur = db.get(User,user_id)
 
-      return utilisateur
+        return utilisateur
+      finally:
+          db.close
 
-def modif_user_repository(utilisateur: User, session:Session):
+def modif_user_repository(user_id,
+                          nom,
+                          prenom,
+                          email,
+
+                          tel,
+                          role):
       
-         user = session.get(User, utilisateur.id) 
-         if user is None:
+       db = SessionLocal() 
+       try:
+
+        utilisateur = db.query(User).filter(
+            User.id == user_id
+        ).first()
+
+        if utilisateur is None:
             return None
-         
-      
-         user.nom = utilisateur.nom
-         user.prenom = utilisateur.prenom
-         user.email = utilisateur.email
-         user.tel = utilisateur.tel
-         user.role = utilisateur.role
 
-         session.commit()
-         session.refresh(user)
+        utilisateur.nom = nom
+        utilisateur.prenom = prenom
+        utilisateur.email = email
+        utilisateur.tel = tel
+        utilisateur.role = role
 
-         return user
+        db.commit()
+        db.refresh(utilisateur)
 
+        return utilisateur
+       finally:
+           db.close()
 
 
 #lire tout les user dans la bd 
 
 
-def lire_users_repository(session: Session):
-      return session.query(User).all()
-
+def lire_users_repository():
+      db = SessionLocal()
+      try:
+       return db.query(User).all()
+      finally:
+          db.close()
 
 # supprimer un user a paertie de son id
 
  
-def supprimer_user_repository(user_id: int, session: Session):
+def supprimer_user_repository(user_id):
+    db = SessionLocal()
+        
+    
+    try:
 
-    utilisateur = session.get(User, user_id)
+        user = db.query(User).filter(
+            User.id == user_id
+        ).first()
 
-    if utilisateur is None:
-        return None
+        if user is None:
+            return None
 
-    session.delete(utilisateur)
-    session.commit()
+        db.delete(user)
+        db.commit()
 
-    return utilisateur 
+        return {
+            "message": "Utilisateur supprimé avec succès"
+        }
 
+    finally:
+        db.close()
+
+
+def patch_user_repository(
+    user_id,
+    nouveau_nom=None,
+    nouveau_prenom=None,
+    nouveau_email=None,
+    nouveau_tel=None,
+    nouveau_role=None
+):
+    db = SessionLocal()
+
+    try:
+        utilisateur = db.query(User).filter(
+            User.id == user_id
+        ).first()
+
+        if utilisateur is None:
+            return None
+
+        if nouveau_nom is not None:
+            utilisateur.nom = nouveau_nom
+
+        if nouveau_prenom is not None:
+            utilisateur.prenom = nouveau_prenom
+
+        if nouveau_email is not None:
+            utilisateur.email = nouveau_email
+
+        if nouveau_tel is not None:
+            utilisateur.tel = nouveau_tel
+
+        if nouveau_role is not None:
+            utilisateur.role = nouveau_role
+
+        db.commit()
+        db.refresh(utilisateur)
+
+        return utilisateur
+
+    finally:
+        db.close()

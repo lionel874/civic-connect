@@ -2,13 +2,14 @@ from REPOSITORIES.product_repository import (create_product_repo,
                                              modif_produit_repo,
                                              lire_produit_repository,
                                              supprimer_produit_repository,
-                                             identifier_produit_par_id)
+                                             identifier_produit_par_id,
+                                             patch_product_repository)
 from CLASS.product import Product
-from sqlalchemy.orm import Session
+
 
 # logique metier de produit
 
-def ajout_produit_service(nom, prix, quantite, session:Session):
+def ajout_produit_service(nom, prix, quantite):
 
     if not nom:
          raise ValueError("le nom est obligatoire")
@@ -35,61 +36,130 @@ def ajout_produit_service(nom, prix, quantite, session:Session):
                 prix_p = prix,
                 quantite_p = quantite)
 
-    return create_product_repo(produit,session)
+    return create_product_repo(produit)
 
 
 # modifier produit 
 
-def modif_produit_service(product_id,
+
+def modif_produit_service(
+    product_id,
     nouveau_nom,
-    nouvelle_description,
     nouveau_prix,
-    session: Session
+    nouvelle_quantite
 ):
 
     if not nouveau_nom:
         raise ValueError("Le nom du produit est obligatoire")
 
-    if not nouvelle_description:
-        raise ValueError("La description du produit est obligatoire")
-
     if nouveau_prix is None:
         raise ValueError("Le prix du produit est obligatoire")
 
-    produit = session.get(Product,session)
+    if nouvelle_quantite is None:
+        raise ValueError("La quantité du produit est obligatoire")
+
+    if not isinstance(nouveau_nom, str):
+        raise ValueError("Le nom doit être une chaîne de caractères")
+
+    if not isinstance(nouveau_prix, (int, float)):
+        raise ValueError("Le prix doit être un nombre")
+
+    if not isinstance(nouvelle_quantite, int):
+        raise ValueError("La quantité doit être un entier")
+
+    if nouveau_prix < 0:
+        raise ValueError("Le prix ne peut pas être négatif")
+
+    if nouvelle_quantite < 0:
+        raise ValueError("La quantité ne peut pas être négative")
+
+    produit = identifier_produit_par_id(product_id)
 
     if produit is None:
         raise ValueError("Produit introuvable")
-    
-    produit.nom_p = nouveau_nom
-    produit.description_p = nouvelle_description
-    produit.prix = nouveau_prix
 
     return modif_produit_repo(
-        produit,
-        session)
-
-
-# supprimer un produit
-
-def supprimer_product_service(
-    product_id: int,
-    session: Session
-):
-
-    produit = identifier_produit_par_id(
         product_id,
-        session
+        nouveau_nom,
+        nouveau_prix,
+        nouvelle_quantite
     )
+
+
+# LIRE UN PRODUIT
+
+
+def lire_produit_service(product_id: int):
+
+    produit = identifier_produit_par_id(product_id)
 
     if produit is None:
         raise ValueError("Produit introuvable")
 
-    return supprimer_produit_repository(
+    return produit
+
+
+
+# LIRE TOUS LES PRODUITS
+
+
+def lire_products_service():
+
+    return lire_produit_repository()
+
+
+
+# SUPPRIMER UN PRODUIT
+
+
+def supprimer_product_service(product_id: int):
+
+    resultat = supprimer_produit_repository(product_id)
+
+    if resultat is None:
+        raise ValueError("Produit introuvable")
+
+    return resultat 
+
+
+# modifier partiellement produit
+
+def patch_produit_service(
+    product_id,
+    nouveau_nom=None,
+    nouveau_prix=None,
+    nouvelle_quantite=None,
+    
+    
+):
+    if nouveau_nom is None and nouveau_prix is None and nouvelle_quantite is None:
+        raise ValueError("Aucune donnée à modifier")
+
+    if nouveau_nom is not None and not isinstance(nouveau_nom, str):
+        raise ValueError("Le nom doit être une chaîne de caractères")
+
+    if nouveau_prix is not None:
+        if not isinstance(nouveau_prix, (int, float)):
+            raise ValueError("Le prix doit être un nombre")
+
+        if nouveau_prix < 0:
+            raise ValueError("Le prix ne peut pas être négatif")
+
+    if nouvelle_quantite is not None:
+        if not isinstance(nouvelle_quantite, int):
+            raise ValueError("La quantité doit être un entier")
+
+        if nouvelle_quantite < 0:
+            raise ValueError("La quantité ne peut pas être négative")
+
+    produit = identifier_produit_par_id(product_id)
+
+    if produit is None:
+        raise ValueError("Produit introuvable")
+
+    return patch_product_repository(
         product_id,
-        session)
-
-
-def lire_products_service(session: Session):
-
-    return lire_produit_repository(session)
+        nouveau_nom,
+        nouveau_prix,
+        nouvelle_quantite
+    )  

@@ -1,8 +1,10 @@
-from sqlalchemy.orm import Session
 from CLASS.users import User
-
 from CLASS.service import Service
-from REPOSITORIES.service_repository import create_service,lire_service_repository
+from REPOSITORIES.service_repository import (create_service,
+                                             lire_service_repository,
+                                             verifier_user_repository,
+                                             supprimer_service_repository,
+                                             identifier_service_par_id)
 
 
 def ajout_service(
@@ -11,7 +13,7 @@ def ajout_service(
     prix,
     user_id,
     location_id,
-    session:Session
+    
 ):
 
     # Vérification du nom
@@ -49,7 +51,7 @@ def ajout_service(
     if location_id is None:
         raise ValueError("location_id ne peut pas être None")
 
-    user = session.get(User, user_id)
+    user = verifier_user_repository(user_id)
 
     if user is None:
      raise ValueError("L'utilisateur n'existe pas")
@@ -63,11 +65,25 @@ def ajout_service(
     )
 
     # Enregistrement via le repository
-    return create_service(service, session)
+    return create_service(service)
 
 
 # lire les service
 
-def lire_service_service(session: Session):
+def lire_service_service():
 
-    return lire_service_repository(session)
+    return lire_service_repository()
+
+
+
+#supprimer service par nom
+
+
+def supprimer_service_service(service_id:int):
+
+    service = identifier_service_par_id(service_id)
+
+    if service is None:
+        raise ValueError("service introuvable")
+
+    return supprimer_service_repository(service_id)

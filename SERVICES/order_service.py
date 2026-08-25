@@ -1,43 +1,80 @@
-from REPOSITORIES.order_repository import create_order_repo
-from sqlalchemy.orm import Session
-from CLASS.users import User
+from REPOSITORIES.order_repository import (
+    create_order_repo,
+    lire_order_repository
+)
+
+from REPOSITORIES.user_repository import identifier_user_par_id
+from REPOSITORIES.product_repository import identifier_produit_par_id
+
 from CLASS.order import Order
-from CLASS.product import Product
+
+# logique métier de la commande
+
+def ajout_order(
+    titre,
+    quantite,
+    mte_total,
+    user_id,
+    product_id
+):
+
+    # vérification du titre
+
+    if titre is None or not isinstance(titre, str):
+        raise ValueError("Le titre doit être une chaîne")
+
+    if not titre.strip():
+        raise ValueError("Le titre est obligatoire")
 
 
-# logique metier de la commande
+    # vérification de la quantité
 
-def ajout_order( titre, quantite, mte, user_id, product_id,session:Session):
-    
-      # verification du titre
-      if titre is None or isinstance(titre,str):
-        raise ValueError("le titre doit etre une chaine")
+    if quantite is None:
+        raise ValueError("La quantité est obligatoire")
 
-      # verification de la quantite
+    if not isinstance(quantite, int):
+        raise ValueError("La quantité doit être un entier")
 
-      if quantite is None:
-        raise ValueError("quantite ne peut pas etre none")
-      if not isinstance(quantite,int):
-        raise ValueError("quantite doit etre uun entier")
-      if quantite < 0:
-        raise ValueError("la quantite doit etre superieur a 0")
-
-      # verification du produit
-      product= session.get(Product,product_id)
-
-      if product is None:
-        raise ValueError("le produit n'existe pas")
-
-      # calcul du montant total
-      mte = product.prix_p*quantite
+    if quantite <= 0:
+        raise ValueError("La quantité doit être supérieure à 0")
 
 
+    # vérification de l'utilisateur
 
-      command = Order(
-                    titre_o = titre,
-                    quantite_o = quantite,
-                    mte= mte,
-                    user_id = user_id,
-                    product_id =product_id)
+    user = identifier_user_par_id(user_id)
 
-      return create_order_repo(session,command)
+    if user is None:
+        raise ValueError("L'utilisateur n'existe pas")
+
+
+    # vérification du produit
+
+    product = identifier_produit_par_id(product_id)
+
+    if product is None:
+        raise ValueError("Le produit n'existe pas")
+
+
+    # calcul du montant total
+
+    mte_total = product.prix_p * quantite
+
+
+    # création de la commande
+
+    command = Order(
+        titre_o=titre,
+        quantite_o=quantite,
+        mte_total=mte_total,
+        user_id=user_id,
+        product_id=product_id
+    )
+
+    return create_order_repo(command)
+
+
+# lire toutes les commandes
+
+def lire_order_service():
+
+    return lire_order_repository()

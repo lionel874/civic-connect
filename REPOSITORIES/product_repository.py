@@ -1,61 +1,136 @@
-from sqlalchemy.orm import Session
+from database import SessionLocal
 from CLASS.product import Product
 
 # creation 1 produit dans la bd
 
-def create_product_repo(produit:Product, session:Session):
-    
-        session.add(produit)
-        session.commit()
-        session.refresh(produit)
-        return produit
+def create_product_repo(produit):
+
+            db =SessionLocal()
+            try:
+             db.add(produit)
+             db.commit()
+             db.refresh(produit)
+             return produit
+            finally:
+                db.close()
 
 # modification de produit dans la bd
 
-def modif_produit_repo(produit:Product, session:Session):
-    
-        product= session.get(Product,produit.prix)
-        if product is None:
+def modif_produit_repo(
+    product_id,
+    nom_p,
+    prix_p,
+    quantite_p
+):
+
+    db = SessionLocal()
+
+    try:
+
+        produit = db.query(Product).filter(
+            Product.id_p == product_id
+        ).first()
+
+        if produit is None:
             return None
-        product.prix_p = produit.prix
-        product.quantite_p = produit.quantite
-        product.nom_p = produit.nom_p
 
-        session.commit()
-        session.refresh(product)
+        produit.nom_p = nom_p
+        produit.prix_p = prix_p
+        produit.quantite_p = quantite_p
 
-        return product
+        db.commit()
+        db.refresh(produit)
 
+        return produit
 
-# lire les produit dispo dans la bd
-
-
-def lire_produit_repository(session: Session):
-      return session.query(Product).all()
+    finally:
+        db.close()
 
 
-# supprimer un produit dans la bd
+def identifier_produit_par_id(product_id: int):
+
+    db = SessionLocal()
+
+    try:
+        produit = db.query(Product).filter(
+            Product.id_p == product_id
+        ).first()
+
+        return produit
+
+    finally:
+        db.close()
+
+# Supprimer un produit par son ID
+def supprimer_produit_repository(product_id: int):
+
+    db = SessionLocal()
+
+    try:
+
+        produit = db.query(Product).filter(
+            Product.id_p == product_id
+        ).first()
+
+        if produit is None:
+            return None
+
+        db.delete(produit)
+        db.commit()
+
+        return {
+            "message": "Produit supprimé avec succès"
+        }
+
+    finally:
+        db.close()
 
 
-def supprimer_produit_repository(nom: str, session: Session):
+def lire_produit_repository():
 
-    produit = session.get(Product, nom)
+    db = SessionLocal()
 
-    if produit is None:
-        return None
+    try:
+        produits = db.query(Product).all()
 
-    session.delete(produit)
-    session.commit()
+        return produits
 
-    return produit
-
-
-# identifier produit
-
-def identifier_produit_par_id(product_id: str, session:Session ):
-   
-      produit = session.get(Product,product_id)
+    finally:
+        db.close()
 
 
+def patch_product_repository(
+    product_id,
+    nom_p=None,
+    prix_p=None,
+    quantite_p=None,
+    
+):
+    db = SessionLocal()
 
-      return produit
+    try:
+        produit = db.query(Product).filter(
+            Product.id_p== product_id
+        ).first()
+
+        if produit is None:
+            return None
+
+        if nom_p is not None:
+            produit.nom_p = nom_p
+
+        if prix_p is not None:
+            produit.prix_p = prix_p
+
+        if quantite_p is not None:
+            produit.quantite_p = quantite_p
+
+        
+
+        db.commit()
+        db.refresh(produit)
+
+        return produit
+
+    finally:
+        db.close()

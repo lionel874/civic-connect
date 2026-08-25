@@ -1,37 +1,96 @@
 from CLASS.report import Report
-from sqlalchemy.orm import Session
+from database import SessionLocal
 
 
 
 # creation d'1 signalement dans la bd
 
-def create_report_repository(signalement: Report,
-    session: Session):
-    
-        session.add(signalement)
-        session.commit ()
-        session.refresh(signalement)
+def create_report_repository(signalement):
+
+    db = SessionLocal()
+
+    try:
+        db.add(signalement)
+        db.commit()
+        db.refresh(signalement)
+
         return signalement
 
-def lire_report_repository(session: Session):
-      return session.query(Report).all()
+    finally:
+        db.close()
 
-def identifier_report_par_id(report_id: int, session: Session):
 
-    report = session.get(Report, report_id)
+# Lire tous les signalements
+def lire_report_repository():
 
-    return report
-def supprimer_report_repository(
+    db = SessionLocal()
+
+    try:
+        return db.query(Report).all()
+
+    finally:
+        db.close()
+
+
+# Identifier un signalement par ID
+def identifier_report_par_id(report_id: int):
+
+    db = SessionLocal()
+
+    try:
+        report = db.get(Report, report_id)
+
+        return report
+
+    finally:
+        db.close()
+
+
+# Modifier un signalement
+def modifier_report_repository(
     report_id: int,
-    session: Session
+    titre,
+    description,
+    
 ):
 
-    report = session.get(Report, report_id)
+    db = SessionLocal()
 
-    if report is None:
-        return None
+    try:
 
-    session.delete(report)
-    session.commit()
+        report = db.get(Report, report_id)
 
-    return report
+        if report is None:
+            return None
+
+        report.titre = titre
+        report.description = description
+        
+        db.commit()
+        db.refresh(report)
+
+        return report
+
+    finally:
+        db.close()
+
+
+# Supprimer un signalement par ID
+def supprimer_report_repository(report_id: int):
+
+    db = SessionLocal()
+
+    try:
+
+        report = db.get(Report, report_id)
+
+        if report is None:
+            return None
+
+        db.delete(report)
+        db.commit()
+
+        return report
+
+    finally:
+        db.close()

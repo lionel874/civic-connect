@@ -1,7 +1,7 @@
-from fastapi import APIRouter, Depends
-from sqlalchemy.orm import Session
-from database import SessionLocal
-from SERVICES.location_service import ajout_localisation_service,lire_localisation_service
+from fastapi import APIRouter
+from SERVICES.location_service import (ajout_localisation_service,
+                                       lire_localisation_service,
+                                       supprimer_localisation_service)
 
 
 router = APIRouter(
@@ -9,12 +9,6 @@ router = APIRouter(
     tags=["Location"]
 )
 
-def get_db():
-    db = SessionLocal()
-    try :
-        yield db
-    finally:
-        db.close()
 
 
 @router.post("/")
@@ -22,5 +16,16 @@ def get_db():
 def create_location(ville: str,
                     quartier:str,
                     adresse: str,
-                    session: Session = Depends(get_db)):
-    return ajout_localisation_service(ville, quartier, adresse, session)
+                    ):
+    return ajout_localisation_service(ville, quartier, adresse)
+
+@router.get("/")
+def get_users():
+  return lire_localisation_service()
+
+
+
+@router.delete("/{location_id}")
+def delete_user(location_id:int):
+
+    return supprimer_localisation_service(location_id)

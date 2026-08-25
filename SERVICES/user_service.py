@@ -3,8 +3,8 @@ from CLASS.users import User
 from REPOSITORIES.user_repository import create_user
 from REPOSITORIES.user_repository import modif_user_repository,identifier_user_par_id,lire_users_repository
 from REPOSITORIES.user_repository import supprimer_user_repository
-from sqlalchemy.orm import Session
-def ajout_user(nom, prenom, email, tel, role, session:Session):
+from REPOSITORIES.user_repository import patch_user_repository
+def ajout_user(nom, prenom, email, tel, role):
     
         if not nom:
             raise ValueError("le nom est obligatoire")
@@ -65,7 +65,7 @@ def ajout_user(nom, prenom, email, tel, role, session:Session):
                            role=role,
                            )
         
-        return create_user(utilisateur,session)
+        return create_user(utilisateur)
 
 
 def modifier_user_service(
@@ -75,7 +75,7 @@ def modifier_user_service(
     nouveau_email,
     nouveau_tel,
     nouveau_role,
-    session: Session
+    
 ):
 
     if not nouveau_nom:
@@ -94,41 +94,41 @@ def modifier_user_service(
         raise ValueError("Le rôle est obligatoire")
 
     utilisateur = identifier_user_par_id(
-        user_id,
-        session
+        user_id
     )
 
     if utilisateur is None:
         raise ValueError("Utilisateur introuvable")
 
-    utilisateur.nom = nouveau_nom
-    utilisateur.prenom = nouveau_prenom
-    utilisateur.email = nouveau_email
-    utilisateur.tel = nouveau_tel
-    utilisateur.role = nouveau_role
+    
 
     return modif_user_repository(
-        utilisateur,
-        session
+        user_id,
+        nouveau_nom,
+        nouveau_prenom,
+        nouveau_email,
+        nouveau_tel,
+        nouveau_role
+        
     )
 
 
 # fonction qui L'ensemble des utilisateur
 
-def lire_users_service(session:Session):
-   return lire_users_repository (session)
+def lire_users_service():
+   return lire_users_repository ()
 
 # fonction supprimer un utilisateur a parti de son id
 
 
-def supprimer_user_service(user_id: int, session: Session):
+def supprimer_user_service(user_id: int):
 
-    utilisateur = identifier_user_par_id(user_id, session)
+    utilisateur = identifier_user_par_id(user_id)
 
     if utilisateur is None:
         raise ValueError("Utilisateur introuvable")
 
-    return supprimer_user_repository(user_id, session)
+    return supprimer_user_repository(user_id)
 
 def patch_user_service(
     user_id,
@@ -137,12 +137,11 @@ def patch_user_service(
     nouveau_email=None,
     nouveau_tel=None,
     nouveau_role=None,
-    session: Session = None
+    
 ):
 
     utilisateur = identifier_user_par_id(
-        user_id,
-        session
+        user_id
     )
 
     if utilisateur is None:
@@ -163,7 +162,6 @@ def patch_user_service(
     if nouveau_role is not None:
         utilisateur.role = nouveau_role
 
-    return modif_user_repository(
-        utilisateur,
-        session
+    return patch_user_repository(
+        
     )

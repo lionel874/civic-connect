@@ -1,8 +1,5 @@
-from fastapi import APIRouter, Depends
-from sqlalchemy.orm import Session
-
-from database import SessionLocal
-from SERVICES.order_service import ajout_order
+from fastapi import APIRouter
+from SERVICES.order_service import ajout_order,lire_order_service
 
 
 router = APIRouter(
@@ -11,26 +8,22 @@ router = APIRouter(
 )
 
 
-def get_db():
-    db = SessionLocal()
-    try:
-        yield db
-    finally:
-        db.close()
-
 
 @router.post("/")
 def create_order(
     titre: str,
     quantite: int,
     user_id: int,
-    product_id: int,
-    session: Session = Depends(get_db)
-):
+    product_id: int):
+    
     return ajout_order(
-        titre=titre,
-        quantite=quantite,
-        user_id=user_id,
-        product_id=product_id,
-        session=session
+        titre,
+        quantite,
+        user_id,
+        product_id
+        
     )
+
+@router.get("/")
+def get_order():
+  return lire_order_service()
