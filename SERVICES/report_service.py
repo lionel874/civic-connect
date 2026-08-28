@@ -58,7 +58,9 @@ def ajout_report_service(
         titre=titre,
         description=description,
         user_id=user_id,
-        location_id=location_id
+        location_id=location_id,
+        type="panne",
+        statut="en cours"
     )
 
     return create_report_repository(signalement)
@@ -66,9 +68,20 @@ def ajout_report_service(
 
 # Lire tous les signalements
 
-def lire_report_service():
+def lire_report_service(type: str = None, 
+                        statut: str = None,
+                          page: int = 1, 
+                          limit: int = 10):
+    # Sécurité : empêcher une pagination abusive
+    if limit > 50:
+        limit = 50
 
-    return lire_report_repository()
+    if limit < 1:
+        limit = 10
+
+    if page < 1:
+        page = 1
+    return lire_report_repository(type,statut,page,limit)
 
 
 # Identifier un signalement par ID

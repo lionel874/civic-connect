@@ -11,6 +11,7 @@ def ajout_service(
     nom_s,
     description,
     prix,
+    categorie,
     user_id,
     location_id,
     
@@ -42,7 +43,9 @@ def ajout_service(
 
     if prix < 0:
         raise ValueError("Le prix ne peut pas être négatif")
-
+    # verification de la categorie
+    if categorie is None or not isinstance(categorie, str) or categorie.strip() == "":
+        raise ValueError("La catégorie est obligatoire")
     # Vérification de user_id
     if user_id is None:
         raise ValueError("user_id ne peut pas être None")
@@ -60,6 +63,7 @@ def ajout_service(
         nom_s=nom_s,
         description=description,
         prix=prix,
+        categorie=categorie,
         user_id=user_id,
         location_id=location_id
     )
@@ -70,9 +74,8 @@ def ajout_service(
 
 # lire les service
 
-def lire_service_service():
-
-    return lire_service_repository()
+def lire_service_service(categorie: str = None, mot_cle: str = None, zone: str = None, page: int = 1, limit: int = 10):
+    return lire_service_repository(categorie, mot_cle, zone, page, limit)
 
 
 

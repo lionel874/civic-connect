@@ -19,6 +19,7 @@ router = APIRouter(
 def create_service_route(nom_s:str,
                    description:str,
                    prix: float,
+                   categorie,
                    user_id: int,
                    location_id: int
                    ):
@@ -26,14 +27,19 @@ def create_service_route(nom_s:str,
         nom_s,
         description,
         prix,
+        categorie,
         user_id,
         location_id,
         
     )
 
 @router.get("/")
-def get_users():
-  return lire_service_service()
+def get_service(categorie: str = None,
+    mot_cle: str = None,
+    zone: str = None,
+    page: int = 1,
+    limit: int = 10):
+  return lire_service_service(categorie, mot_cle, zone, page, limit)
 
 @router.delete("/{service_id}")
 def delete_user(service_id:int ):

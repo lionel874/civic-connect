@@ -21,13 +21,31 @@ def create_report_repository(signalement):
 
 
 # Lire tous les signalements
-def lire_report_repository():
-
+def lire_report_repository(type: str = None, 
+                           statut: str = None, 
+                           page: int = 1, 
+                           limit: int = 10):
     db = SessionLocal()
-
     try:
-        return db.query(Report).all()
+        query = db.query(Report)
 
+        if type:
+            query = query.filter(Report.type == type)
+
+        if statut:
+            query = query.filter(Report.statut == statut)
+
+        query = query.order_by(Report.date.desc())
+
+        total = query.count()
+        resultats = query.offset((page - 1) * limit).limit(limit).all()
+
+        return {
+            "total": total,
+            "page": page,
+            "limit": limit,
+            "resultats": resultats
+        }
     finally:
         db.close()
 

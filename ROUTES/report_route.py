@@ -28,9 +28,17 @@ def create_report(
         
     )
 
+
+
 @router.get("/")
-def get_report():
-    return lire_report_service()
+def get_report(type: str = None,
+    statut: str = None,
+    page: int = 1,
+    limit: int = 10):
+    return lire_report_service(type,statut,page,limit)
+
+
+
 
 @router.delete("/{report_id}")
 

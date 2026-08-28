@@ -130,6 +130,7 @@ def supprimer_user_service(user_id: int):
 
     return supprimer_user_repository(user_id)
 
+# modifier un user partiellement
 def patch_user_service(
     user_id,
     nouveau_nom=None,
@@ -137,31 +138,18 @@ def patch_user_service(
     nouveau_email=None,
     nouveau_tel=None,
     nouveau_role=None,
-    
 ):
 
-    utilisateur = identifier_user_par_id(
-        user_id
-    )
+    utilisateur = identifier_user_par_id(user_id)
 
     if utilisateur is None:
         raise ValueError("Utilisateur introuvable")
 
-    if nouveau_nom is not None:
-        utilisateur.nom = nouveau_nom
-
-    if nouveau_prenom is not None:
-        utilisateur.prenom = nouveau_prenom
-
-    if nouveau_email is not None:
-        utilisateur.email = nouveau_email
-
-    if nouveau_tel is not None:
-        utilisateur.tel = nouveau_tel
-
-    if nouveau_role is not None:
-        utilisateur.role = nouveau_role
-
     return patch_user_repository(
-        
+        user_id,
+        nouveau_nom,
+        nouveau_prenom,
+        nouveau_email,
+        nouveau_tel,
+        nouveau_role
     )
