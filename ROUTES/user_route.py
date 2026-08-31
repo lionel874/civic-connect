@@ -11,7 +11,7 @@ router = APIRouter(
     tags=["Users"]
 )
 
-@router.post("/")
+@router.post("/",summary="Créer un utilisateur")
 
 
 def create_user(nom: str,
@@ -19,7 +19,7 @@ def create_user(nom: str,
                 email: str,
                 tel:str,
                 role: str ):
-  
+    """Crée un nouvel utilisateur dans l'application."""  
     return ajout_user(nom, 
                       prenom, 
                       email, 
@@ -27,7 +27,7 @@ def create_user(nom: str,
                       role)
 
 
-@router.patch("/{user_id}")
+@router.patch("/{user_id}",summary="Modifier partiellement un utilisateur")
 def patch_user(
     user_id: int,
     nouveau_nom: str | None = None,
@@ -37,6 +37,7 @@ def patch_user(
     nouveau_role: str | None = None,
     
 ):
+    """Modifie un ou plusieurs champs d'un utilisateur, sans toucher aux autres."""  
     return patch_user_service(
         user_id,
         nouveau_nom,
@@ -47,16 +48,19 @@ def patch_user(
         
     )
 
-@router.get("/")
+@router.get("/",summary="Lister les utilisateurs")
 def get_users():
+  """Retourne la liste de tous les utilisateurs."""
   return lire_users_service()
 
 
-@router.delete("/{user_id}")
+
+@router.delete("/{user_id}",summary="Supprimer un utilisateur")
 def delete_user(user_id:int ):
+    """Supprime un utilisateur par son identifiant."""
     return supprimer_user_service(user_id)
 
-@router.put("/{user_id}")
+@router.put("/{user_id}",summary="Remplacer un utilisateur")
 def update_user(
     user_id: int,
     nouveau_nom: str,
@@ -65,6 +69,8 @@ def update_user(
     nouveau_tel: str,
     nouveau_role: str
 ):
+    """Remplace entièrement les informations d'un utilisateur existant."""
+
     return modifier_user_service(
         user_id,
         nouveau_nom,
