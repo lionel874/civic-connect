@@ -8,8 +8,35 @@ from ROUTES.order_route import router as order_router
 from ROUTES.report_route import router as report_router
 from database import Base,engine
 from CLASS.report import Report
+from fastapi.requests import Request
+from fastapi.responses import JSONResponse
+from fastapi.requests import Request
+from fastapi.responses import JSONResponse
+from fastapi.middleware.cors import CORSMiddleware
+
+
+
+
 app = FastAPI()
+
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
+@app.exception_handler(ValueError)
+def value_error_handler(request: Request, exc: ValueError):
+    return JSONResponse(
+        status_code=400,
+        content={"detail": str(exc)}
+    )
+
+
 Base.metadata.create_all(bind=engine)
+
+
 
 app.include_router(user_router)
 app.include_router(location_router)

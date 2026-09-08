@@ -1,242 +1,177 @@
-import unittest
+def test_creer_commande_valide(client, user_id, product_id):
 
-from sqlalchemy import create_engine
-from sqlalchemy.orm import Session
+    response = client.post(
+        "/orders/",
+        params={
+            "titre": "Commande PC",
+            "quantite": 2,
+            "user_id": user_id,
+            "product_id": product_id
+        }
+    )
 
-from database import Base
+    assert response.status_code == 200
 
-from CLASS.users import User
-from CLASS.product import Product
-from CLASS.order import Order
+    data = response.json()
 
-from SERVICES.order_service import (
-    ajout_order,
-    lire_order_service
-)
+    assert data["titre_o"] == "Commande PC"
+    assert data["quantite_o"] == 2
+    assert data["mte_total"] == 2000
 
 
-test_engine = create_engine(
-    "sqlite:///test_database/test_civic_connect.db"
-)
+def test_montant_total_calcule_automatiquement(client, user_id, product_id):
 
-Base.metadata.create_all(test_engine)
+    response = client.post(
+        "/orders/",
+        params={
+            "titre": "Commande test calcul",
+            "quantite": 5,
+            "user_id": user_id,
+            "product_id": product_id
+        }
+    )
 
+    data = response.json()
 
-class TestOrderService(unittest.TestCase):
+    assert data["mte_total"] == 5000
 
-    # Test ajout d'une commande valide
 
-    def test_ajout_order_valide(self):
+def test_quantite_negative(client, user_id, product_id):
 
-        with Session(test_engine) as session:
+    response = client.post(
+        "/orders/",
+        params={
+            "titre": "Commande invalide",
+            "quantite": -1,
+            "user_id": user_id,
+            "product_id": product_id
+        }
+    )
 
-            utilisateur = User(
-                nom="moudouthe",
-                prenom="lionel",
-                email="order@gmail.com",
-                tel="680048703",
-                role="user"
-            )
+    assert response.status_code == 400
 
-            produit = Product(
-                nom_p="produit1",
-                prix_p=1000,
-                quantite_p=10
-            )
 
-            session.add(utilisateur)
-            session.add(produit)
-            session.commit()
+def test_produit_inexistant(client, user_id):
 
-            commande = ajout_order(
-                "commande1",
-                5,
-                utilisateur.id,
-                produit.id_p,
-                session
-            )
+    response = client.post(
+        "/orders/",
+        params={
+            "titre": "Commande invalide",
+            "quantite": 2,
+            "user_id": user_id,
+            "product_id": 999999
+        }
+    )
 
-            self.assertIsNotNone(commande)
+    assert response.status_code == 400
 
-            self.assertEqual(
-                commande.titre_o,
-                "commande1"
-            )
 
-            self.assertEqual(
-                commande.quantite_o,
-                5
-            )
+def test_lire_commande_par_id(client, user_id, product_id):
 
-            self.assertEqual(
-                commande.mte_total,
-                5000
-            )
+    creation = client.post(
+        "/orders/",
+        params={
+            "titre": "Commande a lire",
+            "quantite": 1,
+            "user_id": user_id,
+            "product_id": product_id
+        }
+    )
 
+    order_id = creation.json()["num_o"]
 
-    # Test titre vide
+    response = client.get(f"/orders/{order_id}")
 
-    def test_titre_vide(self):
+    assert response.status_code == 200
+    assert response.json()["num_o"] == order_id
 
-        with Session(test_engine) as session:
 
-            with self.assertRaises(ValueError):
+def test_lire_commande_inexistante(client):
 
-                ajout_order(
-                    "",
-                    5,
-                    1,
-                    1,
-                    session
-                )
+    response = client.get("/orders/999999")
 
+    assert response.status_code == 400
 
-    # Test titre None
 
-    def test_titre_none(self):
+def test_modifier_commande_recalcule_montant(client, user_id, product_id):
 
-        with Session(test_engine) as session:
+    creation = client.post(
+        "/orders/",
+        params={
+            "titre": "Commande a modifier",
+            "quantite": 1,
+            "user_id": user_id,
+            "product_id": product_id
+        }
+    )
 
-            with self.assertRaises(ValueError):
+    order_id = creation.json()["num_o"]
 
-                ajout_order(
-                    None,
-                    5,
-                    1,
-                    1,
-                    session
-                )
+    response = client.put(
+        f"/orders/{order_id}",
+        params={
+            "titre": "Commande modifiee",
+            "quantite": 3,
+            "product_id": product_id
+        }
+    )
 
+    assert response.status_code == 200
 
-    # Test titre qui n'est pas une chaîne
+    data = response.json()
 
-    def test_titre_n_est_pas_une_chaine(self):
+    assert data["quantite_o"] == 3
+    assert data["mte_total"] == 3000
 
-        with Session(test_engine) as session:
 
-            with self.assertRaises(ValueError):
+def test_patch_quantite_seule(client, user_id, product_id):
 
-                ajout_order(
-                    123,
-                    5,
-                    1,
-                    1,
-                    session
-                )
+    creation = client.post(
+        "/orders/",
+        params={
+            "titre": "Commande a patcher",
+            "quantite": 1,
+            "user_id": user_id,
+            "product_id": product_id
+        }
+    )
 
+    order_id = creation.json()["num_o"]
 
-    # Test quantité vide
+    response = client.patch(
+        f"/orders/{order_id}",
+        params={"quantite": 4}
+    )
 
-    def test_quantite_none(self):
+    assert response.status_code == 200
 
-        with Session(test_engine) as session:
+    data = response.json()
 
-            with self.assertRaises(ValueError):
+    assert data["quantite_o"] == 4
+    assert data["mte_total"] == 4000
 
-                ajout_order(
-                    "commande1",
-                    None,
-                    1,
-                    1,
-                    session
-                )
 
+def test_supprimer_commande(client, user_id, product_id):
 
-    # Test quantité qui n'est pas un entier
+    creation = client.post(
+        "/orders/",
+        params={
+            "titre": "A supprimer",
+            "quantite": 1,
+            "user_id": user_id,
+            "product_id": product_id
+        }
+    )
 
-    def test_quantite_n_est_pas_un_entier(self):
+    order_id = creation.json()["num_o"]
 
-        with Session(test_engine) as session:
+    response = client.delete(f"/orders/{order_id}")
 
-            with self.assertRaises(ValueError):
+    assert response.status_code == 200
 
-                ajout_order(
-                    "commande1",
-                    "5",
-                    1,
-                    1,
-                    session
-                )
 
+def test_supprimer_commande_inexistante(client):
 
-    # Test quantité inférieure ou égale à zéro
+    response = client.delete("/orders/999999")
 
-    def test_quantite_invalide(self):
-
-        with Session(test_engine) as session:
-
-            with self.assertRaises(ValueError):
-
-                ajout_order(
-                    "commande1",
-                    0,
-                    1,
-                    1,
-                    session
-                )
-
-
-    # Test utilisateur inexistant
-
-    def test_user_inexistant(self):
-
-        with Session(test_engine) as session:
-
-            with self.assertRaises(ValueError):
-
-                ajout_order(
-                    "commande1",
-                    5,
-                    999999,
-                    1,
-                    session
-                )
-
-
-    # Test produit inexistant
-
-    def test_product_inexistant(self):
-
-        with Session(test_engine) as session:
-
-            with self.assertRaises(ValueError):
-
-                ajout_order(
-                    "commande1",
-                    5,
-                    1,
-                    999999,
-                    session
-                )
-
-
-    # Test lecture de toutes les commandes
-
-    def test_lire_orders(self):
-
-        with Session(test_engine) as session:
-
-            commandes = lire_order_service(session)
-
-            self.assertIsNotNone(commandes)
-
-
-    # Test lecture lorsque la base est vide
-
-    def test_lire_orders_base_vide(self):
-
-        with Session(test_engine) as session:
-
-            session.query(Order).delete()
-            session.commit()
-
-            commandes = lire_order_service(session)
-
-            self.assertEqual(
-                commandes,
-                []
-            )
-
-
-if __name__ == "__main__":
-    unittest.main()
+    assert response.status_code == 400

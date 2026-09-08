@@ -1,224 +1,142 @@
-from SERVICES.report_service import (
-    ajout_report_service,
-    identifier_report_service,
-    lire_report_service,
-    supprimer_report_service
-)
-from CLASS.report import Report
-import unittest
-from sqlalchemy import create_engine
-from  database import Base
-from CLASS.users import User
-from CLASS.location import Location
-from sqlalchemy.orm import Session
+def test_creer_report_valide(client, user_id, location_id):
 
-test_engine = create_engine(
-    "sqlite:///test_database/test_civic_connect.db"
-)
-Base.metadata.create_all(test_engine)
-
-
-class TestAjoutReport(unittest.TestCase):
-
-    # test si tout est valide 
-
-   def test_report_valide(self):
-
-    user = User(
-        nom="moudouthe",
-        prenom="lionel",
-        email="lionel@gmail.com",
-        tel="680048703",
-        role="admin"
+    response = client.post(
+        "/reports/",
+        params={
+            "titre": "Coupure electricite",
+            "description": "Plus de courant depuis hier",
+            "user_id": user_id,
+            "location_id": location_id
+        }
     )
 
-    localisation = Location(
-        ville="dschang",
-        quartier="tchouale",
-        adresse="rue-456",
-        
+    assert response.status_code == 200
+
+    data = response.json()
+
+    assert data["titre"] == "Coupure electricite"
+    assert data["type"] == "panne"
+    assert data["statut"] == "en cours"
+
+
+def test_titre_vide(client, user_id, location_id):
+
+    response = client.post(
+        "/reports/",
+        params={
+            "titre": "",
+            "description": "Description",
+            "user_id": user_id,
+            "location_id": location_id
+        }
     )
 
-    with Session(test_engine) as session:
+    assert response.status_code == 400
 
-        session.add(user)
-        session.add(localisation)
 
-        session.commit()
+def test_lire_reports(client):
 
-        user_id = user.id
-        location_id = localisation.id_l
+    response = client.get("/reports/")
 
-    signalement = ajout_report_service(
-        1,
-        "titre",
-        "description",
-        user_id,
-        location_id,
-        test_engine
+    assert response.status_code == 200
+
+    data = response.json()
+
+    assert "total" in data
+    assert "resultats" in data
+
+
+def test_filtre_statut(client, user_id, location_id):
+
+    client.post(
+        "/reports/",
+        params={
+            "titre": "Test filtre statut",
+            "description": "Description",
+            "user_id": user_id,
+            "location_id": location_id
+        }
     )
 
-    self.assertIsNotNone(signalement) 
+    response = client.get(
+        "/reports/",
+        params={"statut": "en cours"}
+    )
+
+    assert response.status_code == 200
+
+    data = response.json()
+
+    assert data["total"] >= 1
 
 
+def test_filtre_statut_inexistant(client):
+
+    response = client.get(
+        "/reports/",
+        params={"statut": "resolu"}
+    )
+
+    assert response.status_code == 200
+
+    data = response.json()
+
+    assert data["total"] == 0
+    assert data["resultats"] == []
 
 
-# test identification par id
+def test_tri_du_plus_recent(client, user_id, location_id):
 
-    def test_identifier_report_par_id(self):
+    premier = client.post(
+        "/reports/",
+        params={
+            "titre": "Premier signalement",
+            "description": "Description",
+            "user_id": user_id,
+            "location_id": location_id
+        }
+    )
 
-        with Session(test_engine) as session:
+    deuxieme = client.post(
+        "/reports/",
+        params={
+            "titre": "Deuxieme signalement",
+            "description": "Description",
+            "user_id": user_id,
+            "location_id": location_id
+        }
+    )
 
-            user = User(
-                nom="test",
-                prenom="user",
-                email="testreport@gmail.com",
-                tel="680048704",
-                role="user"
-            )
+    response = client.get("/reports/")
 
-            localisation = Location(
-                ville="dschang",
-                quartier="tchouale",
-                adresse="rue-123"
-            )
+    data = response.json()
 
-            session.add(user)
-            session.add(localisation)
+    premier_resultat = data["resultats"][0]
 
-            session.commit()
+    assert premier_resultat["id_r"] == deuxieme.json()["id_r"]
 
-            signalement = ajout_report_service(
-                1,
-                "Incident",
-                "Probleme de connexion",
-                user.id,
-                localisation.id_l,
-                session
-            )
 
-            report_id = signalement.id_r
+def test_supprimer_report(client, user_id, location_id):
 
-            resultat = identifier_report_service(
-                report_id,
-                session
-            )
-  
+    creation = client.post(
+        "/reports/",
+        params={
+            "titre": "A supprimer",
+            "description": "Sera supprime",
+            "user_id": user_id,
+            "location_id": location_id
+        }
+    )
 
-# test identification report inexistant
-   def test_identifier_report_inexistant(self):
-  
-          with Session(test_engine) as session:
-  
-              with self.assertRaises(ValueError):
-  
-                  identifier_report_service(
-                      999,
-                      session
-                  )
-  # test lire tous les report
-    
-   def test_lire_report(self):
+    report_id = creation.json()["id_r"]
 
-        with Session(test_engine) as session:
+    response = client.delete(f"/reports/{report_id}")
 
-            user = User(
-                nom="lecture",
-                prenom="test",
-                email="lecture@gmail.com",
-                tel="680048705",
-                role="user"
-            )
+    assert response.status_code == 200
 
-            localisation = Location(
-                ville="dschang",
-                quartier="tchouale",
-                adresse="rue-789"
-            )
 
-            session.add(user)
-            session.add(localisation)
+def test_supprimer_report_inexistant(client):
 
-            session.commit()
+    response = client.delete("/reports/999999")
 
-            report1 = ajout_report_service(
-                
-                "Report 1",
-                "Description 1",
-                user.id,
-                localisation.id_l,
-                session
-            )
-
-            report2 = ajout_report_service(
-                
-                "Report 2",
-                "Description 2",
-                user.id,
-                localisation.id_l,
-                session
-            )
-
-            reports = lire_report_service(session)
-
-            self.assertIsNotNone(reports)
-            self.assertIn(report1, reports)
-            self.assertIn(report2, reports)
-   def test_lire_reports_base_vide(self):
-
-        with Session(test_engine) as session:
-
-            session.query(Report).delete()
-            session.commit()
-
-            reports = lire_report_service(session)
-
-            self.assertEqual(reports, [])
-
-        def test_supprimer_report(self):
-
-         with Session(test_engine) as session:
-
-            user = User(
-                nom="supprimer",
-                prenom="test",
-                email="supprimerreport@gmail.com",
-                tel="680048707",
-                role="user"
-            )
-
-            localisation = Location(
-                ville="dschang",
-                quartier="tchouale",
-                adresse="rue-222"
-            )
-
-            session.add(user)
-            session.add(localisation)
-
-            session.commit()
-
-            signalement = ajout_report_service(
-                1,
-                "Report à supprimer",
-                "Description",
-                user.id,
-                localisation.id_l,
-                session
-            )
-
-            report_id = signalement.id_r
-
-            supprimer_report_service(
-                report_id,
-                session
-            )
-
-            resultat = session.get(
-                Report,
-                report_id
-            )
-
-            self.assertIsNone(resultat)
-if __name__ == " __main__":
-    unittest.main()
+    assert response.status_code == 400

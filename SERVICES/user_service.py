@@ -4,6 +4,11 @@ from REPOSITORIES.user_repository import create_user
 from REPOSITORIES.user_repository import modif_user_repository,identifier_user_par_id,lire_users_repository
 from REPOSITORIES.user_repository import supprimer_user_repository
 from REPOSITORIES.user_repository import patch_user_repository
+
+ROLES_AUTORISES = ["user", "admin", "provider"]
+ROLES_PUBLICS = ["user", "provider"]
+
+
 def ajout_user(nom, prenom, email, tel, role):
     
         if not nom:
@@ -20,6 +25,7 @@ def ajout_user(nom, prenom, email, tel, role):
 
         if not role:
            raise ValueError("Le rôle est obligatoire")
+
         
         
         # pour verifier si ls nom est une chaine de caractere
@@ -28,8 +34,18 @@ def ajout_user(nom, prenom, email, tel, role):
         if not isinstance(nom, str):
           raise ValueError("Le nom doit être une chaîne de caractères")
         
+        if not nom.replace(" ", "").replace("-", "").isalpha():
+          raise ValueError("Le nom ne doit contenir que des lettres")
+
+
+        if not isinstance(prenom,str):
+           raise ValueError("le nom doit etre une chaine de caracteres")
+        if not prenom.replace(" ", "").replace("-", "").isalpha():
+          raise ValueError("Le prenom ne doit contenir que des lettres")
+
 
         if isinstance (tel, int):
+           
            raise ValueError("numero de tel en chifffre")
         
       
@@ -48,11 +64,12 @@ def ajout_user(nom, prenom, email, tel, role):
         "Le téléphone doit commencer par 6"
     )
         
+# pour verifier les role valide
 
-        roles_autorises = ["user", "admin", "provider"]
-
-        if role not in roles_autorises:
+        
+        if role not in ROLES_PUBLICS:
          raise ValueError("Rôle invalide")
+        
 
         if "@" not in email or "." not in email:
          raise ValueError("L'adresse email est invalide")
@@ -93,6 +110,9 @@ def modifier_user_service(
     if not nouveau_role:
         raise ValueError("Le rôle est obligatoire")
 
+    if nouveau_role not in ROLES_PUBLICS:
+        raise ValueError("Rôle invalide")
+
     utilisateur = identifier_user_par_id(
         user_id
     )
@@ -100,7 +120,7 @@ def modifier_user_service(
     if utilisateur is None:
         raise ValueError("Utilisateur introuvable")
 
-    
+     
 
     return modif_user_repository(
         user_id,
@@ -144,7 +164,21 @@ def patch_user_service(
 
     if utilisateur is None:
         raise ValueError("Utilisateur introuvable")
-
+    if nouveau_role is not None:
+        if nouveau_role not in ROLES_PUBLICS:
+            raise ValueError("Rôle invalide")
+        utilisateur.role = nouveau_role
+    if not isinstance(nouveau_nom, str):
+              raise ValueError("Le nom doit être une chaîne de caractères")
+            
+    if not nouveau_nom.replace(" ", "").replace("-", "").isalpha():
+              raise ValueError("Le nom ne doit contenir que des lettres")
+    
+    
+    if not isinstance(nouveau_prenom,str):
+               raise ValueError("le nom doit etre une chaine de caracteres")
+    if not nouveau_prenom.replace(" ", "").replace("-", "").isalpha():
+               raise ValueError("Le prenom ne doit contenir que des lettres")
     return patch_user_repository(
         user_id,
         nouveau_nom,

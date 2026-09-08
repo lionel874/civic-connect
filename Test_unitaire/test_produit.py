@@ -1,179 +1,85 @@
-from sqlalchemy.orm import Session
-from database import engine,Base
-from CLASS.product import Product
-from SERVICES.product_service import (lire_products_service,
-                                      ajout_produit_service,
-                                      modif_produit_service,
-                                      supprimer_product_service)
-from sqlalchemy import create_engine
-import unittest
+def test_creer_produit_valide(client):
 
-test_engine = create_engine(
-    "sqlite:///test_database/test_civic_connect.db"
-)
-Base.metadata.create_all(test_engine)
+    response = client.post(
+        "/produit/",
+        params={
+            "nom": "Clavier",
+            "prix": 5000,
+            "quantite": 20
+        }
+    )
 
-class TestAjoutProduit(unittest.TestCase):
+    assert response.status_code == 200
 
-    # ajout en condition normal
+    data = response.json()
 
-    def test_ajout_valide(self):
-        
-        produit = ajout_produit_service("produit-1",
-                           "1000 fcfa",
-                           "10 article",
-                           test_engine)
-        self.assertIsNotNone(produit)
-
-    # ajout lorsque parametre nom produit est vide
-    
-    def  test_nom_vide(self):
-        with self.assertRaises(ValueError):
-            ajout_produit_service("",
-                    "1000 fcfa",
-                    "10 article",
-                    test_engine)
-            
-    #ajout lorsque parametre prix produit est vide
-
-    def  test_prix_vide(self):
-            with self.assertRaises(ValueError):
-                ajout_produit_service("produit-1",
-                        "",
-                        "10 article",
-                        test_engine)
+    assert data["nom_p"] == "Clavier"
+    assert data["prix_p"] == 5000
+    assert data["quantite_p"] == 20
 
 
-    #ajout lorsque parametre quantite produit est vide
-    
-    def test_ajout_valide(self):
-        with self.assertRaises(ValueError):
-             ajout_produit_service("produit-1",
-                               "1000 fcfa",
-                               "",
-                               test_engine)
+def test_lire_produits(client):
+
+    response = client.get("/produit/")
+
+    assert response.status_code == 200
+    assert isinstance(response.json(), list)
 
 
-    ####### les tests pour verifier le format
+def test_remplacer_produit(client, product_id):
 
-    # test pour verifier si nom n'est pas un str
+    response = client.put(
+        f"/produit/{product_id}",
+        params={
+            "nouveau_nom": "Souris",
+            "nouveau_prix": 3000,
+            "nouvelle_quantite": 15
+        }
+    )
 
-    def test_nom_pas_str(self):
-         with self.assertRaises(ValueError):
-              ajout_produit_service(123,
-                       "1000 fcfa",
-                       "10 articles",
-                       test_engine)
-    
-   # test pour verifier si prix n'est pas un str
+    assert response.status_code == 200
 
-    def test_prix_pas_str(self):
-         with self.assertRaises(ValueError):
-              ajout_produit_service("produit-1",
-                       123,
-                       "10 articles",
-                       test_engine)
+    data = response.json()
 
-    # test pour verifier si quantite n'est pas un str
-
-    def test_prix_pas_str(self):
-             with self.assertRaises(ValueError):
-                  ajout_produit_service("produit-1",
-                           "1000 fcfa",
-                           123,
-                           test_engine)
+    assert data["nom_p"] == "Souris"
+    assert data["prix_p"] == 3000
+    assert data["quantite_p"] == 15
 
 
-    # test lorsque le parametre nom est none
+def test_patch_prix_seul(client, product_id):
 
-    def test_nom_none(self):
-    
-          with self.assertRaises(ValueError):
-               ajout_produit_service(None,
-                        "1000 fcfa",
-                        "10 articles",
-                         test_engine
-                        
-                    
-               )  
-# test pour lire tout les produit
+    response = client.patch(
+        f"/produit/{product_id}",
+        params={"nouveau_prix": 7500}
+    )
 
-    def test_lire_produit(self):
-         with Session(test_engine) as session:
-              produit1= Product(nom_p="pc1",
-                                prix_p=12.500,
-                                quantite_p= 5)
-              produit2 = Product(nom_p="pc2",
-                                 prix_p=13.546,
-                                 quantite_p=3)
-              session.add_all([produit1,produit2])
-              session.commit()
+    assert response.status_code == 200
+
+    data = response.json()
+
+    assert data["prix_p"] == 7500
 
 
+def test_supprimer_produit(client):
 
-    def test_lire_produit_base_vide(self):
-   
-           with Session(test_engine) as session:
-   
-               # On supprime les utilisateurs présents
-               session.query(Product).delete()
-               session.commit()
-   
-               produit = lire_products_service(session)
-   
-               self.assertEqual(
-                   produit,
-                   []
-               ) 
+    creation = client.post(
+        "/produit/",
+        params={
+            "nom": "A supprimer",
+            "prix": 1000,
+            "quantite": 5
+        }
+    )
 
-    # supprimer un produit
-    def test_supprimer_produit(self):
-    
-            with Session(test_engine) as session:
-    
-                produit = Product(
-                    nom_p="p1",
-                    prix_p=12.500,
-                    quantite_p=7
-                )
-    
-                session.add(produit)
-    
-                session.commit()
-    
-                session.refresh(produit)
-    
-                produit_id = produit.id
-    
-                supprimer_product_service(
-                    produit_id,
-                    session
-                )
-    
-                produit_supprime = session.get(
-                    Product,
-                    produit_id
-                )
-    
-                self.assertIsNone(
-                    produit_supprime
-                )
-    
-    
-    def test_supprimer_produit_inexistant(self):
-    
-            with Session(test_engine) as session:
-    
-                with self.assertRaises(ValueError):
-    
-                    supprimer_product_service(
-                        99,
-                        session
-                    )
-    
+    produit_id = creation.json()["id_p"]
 
-if __name__ == "__main__":
-    unittest.main() 
-    
+    response = client.delete(f"/produit/{produit_id}")
 
-    
+    assert response.status_code == 200
+
+
+def test_supprimer_produit_inexistant(client):
+
+    response = client.delete("/produit/999999")
+
+    assert response.status_code == 400

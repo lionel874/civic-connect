@@ -35,7 +35,7 @@ def lire_report_repository(type: str = None,
         if statut:
             query = query.filter(Report.statut == statut)
 
-        query = query.order_by(Report.date.desc())
+        query = query.order_by(Report.date.desc(), Report.id_r.desc())
 
         total = query.count()
         resultats = query.offset((page - 1) * limit).limit(limit).all()

@@ -21,7 +21,7 @@ def create_service(service):
 def lire_service_repository(categorie: str = None, mot_cle: str = None, zone: str = None, page: int = 1, limit: int = 10):
     db = SessionLocal()
     try:
-        query = db.query(Service).join(Location, Service.location_id == Location.id_l)
+        query = db.query(Service, Location.ville, Location.quartier).join(Location, Service.location_id == Location.id_l)
 
         conditions = []
 
@@ -38,7 +38,22 @@ def lire_service_repository(categorie: str = None, mot_cle: str = None, zone: st
             query = query.filter(or_(*conditions))
 
         total = query.count()
-        resultats = query.offset((page - 1) * limit).limit(limit).all()
+        resultats_bruts = query.offset((page - 1) * limit).limit(limit).all()
+
+        resultats = []
+        for service, ville, quartier in resultats_bruts:
+            resultats.append({
+                "id_s": service.id_s,
+                "nom_s": service.nom_s,
+                "description": service.description,
+                "prix": service.prix,
+                "categorie": service.categorie,
+                "user_id": service.user_id,
+                "location_id": service.location_id,
+                "ville": ville,
+                "quartier": quartier
+            })
+
         return {
             "total": total,
             "page": page,
