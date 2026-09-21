@@ -1,4 +1,5 @@
 from CLASS.report import Report
+from CLASS.location import Location
 from database import SessionLocal
 
 
@@ -21,13 +22,14 @@ def create_report_repository(signalement):
 
 
 # Lire tous les signalements
+
 def lire_report_repository(type: str = None, 
                            statut: str = None, 
                            page: int = 1, 
                            limit: int = 10):
     db = SessionLocal()
     try:
-        query = db.query(Report)
+        query = db.query(Report, Location.ville, Location.quartier).join(Location, Report.location_id == Location.id_l)
 
         if type:
             query = query.filter(Report.type == type)
@@ -38,7 +40,20 @@ def lire_report_repository(type: str = None,
         query = query.order_by(Report.date.desc(), Report.id_r.desc())
 
         total = query.count()
-        resultats = query.offset((page - 1) * limit).limit(limit).all()
+        resultats_bruts = query.offset((page - 1) * limit).limit(limit).all()
+
+        resultats = []
+        for report, ville, quartier in resultats_bruts:
+            resultats.append({
+                "id_r": report.id_r,
+                "titre": report.titre,
+                "description": report.description,
+                "type": report.type,
+                "statut": report.statut,
+                "date": str(report.date),
+                "ville": ville,
+                "quartier": quartier
+            })
 
         return {
             "total": total,
@@ -48,7 +63,6 @@ def lire_report_repository(type: str = None,
         }
     finally:
         db.close()
-
 
 # Identifier un signalement par ID
 def identifier_report_par_id(report_id: int):
@@ -62,6 +76,19 @@ def identifier_report_par_id(report_id: int):
 
     finally:
         db.close()
+
+
+def identifier_report_par_titre_et_location(titre: str, location_id: int):
+      db = SessionLocal()
+      try:
+        report = db.query(Report).filter(
+            Report.titre == titre,
+            Report.location_id == location_id
+        ).first()
+
+        return report
+      finally:
+          db.close()
 
 
 # Modifier un signalement

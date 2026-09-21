@@ -6,6 +6,7 @@ from ROUTES.proudct_route import router as product_router
 from ROUTES.service_route import router as service_router
 from ROUTES.order_route import router as order_router
 from ROUTES.report_route import router as report_router
+from ROUTES.point_connectivite_route import router as point_connectivite_router
 from database import Base,engine
 from CLASS.report import Report
 from fastapi.requests import Request
@@ -44,3 +45,4 @@ app.include_router(product_router)
 app.include_router(service_router)
 app.include_router(order_router)
 app.include_router(report_router)
+app.include_router(point_connectivite_router)

@@ -4,7 +4,7 @@ from SERVICES.user_service import (ajout_user,
                                    modifier_user_service,
                                    supprimer_user_service,
                                    lire_users_service,
-                                   patch_user_service)
+                                   patch_user_service,login_service)
 
 router = APIRouter(
     prefix= "/users",
@@ -18,14 +18,20 @@ def create_user(nom: str,
                 prenom: str,
                 email: str,
                 tel:str,
-                role: str ):
+                role: str,
+                mot_de_passe: str  ):
     """Crée un nouvel utilisateur dans l'application."""  
     return ajout_user(nom, 
                       prenom, 
                       email, 
                       tel, 
-                      role)
+                      role,
+                      mot_de_passe)
 
+@router.post("/login", summary="Se connecter")
+def login(email: str, mot_de_passe: str):
+    """Vérifie les identifiants et retourne un token valide 30 minutes."""
+    return login_service(email, mot_de_passe)
 
 @router.patch("/{user_id}",summary="Modifier partiellement un utilisateur")
 def patch_user(

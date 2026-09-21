@@ -30,7 +30,19 @@ def identifier_localisation_par_id(location_id:int):
 
         return localisation
       finally:
-          db.close
+          db.close()
+
+def identifier_localisation_par_ville_quartier(ville: str, quartier: str):
+      db = SessionLocal()
+      try:
+        localisation = db.query(Location).filter(
+            Location.ville == ville,
+            Location.quartier == quartier
+        ).first()
+
+        return localisation
+      finally:
+          db.close()
 
 def supprimer_localisation_repository(location_id:int):
     db = SessionLocal()

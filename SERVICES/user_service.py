@@ -4,12 +4,16 @@ from REPOSITORIES.user_repository import create_user
 from REPOSITORIES.user_repository import modif_user_repository,identifier_user_par_id,lire_users_repository
 from REPOSITORIES.user_repository import supprimer_user_repository
 from REPOSITORIES.user_repository import patch_user_repository
+from passlib.context import CryptContext
+from REPOSITORIES.user_repository import identifier_user_par_email
+from auth import creer_token
+pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 
 ROLES_AUTORISES = ["user", "admin", "provider"]
 ROLES_PUBLICS = ["user", "provider"]
 
 
-def ajout_user(nom, prenom, email, tel, role):
+def ajout_user(nom, prenom, email, tel, role,mot_de_passe):
     
         if not nom:
             raise ValueError("le nom est obligatoire")
@@ -26,7 +30,11 @@ def ajout_user(nom, prenom, email, tel, role):
         if not role:
            raise ValueError("Le rôle est obligatoire")
 
-        
+        if not mot_de_passe:
+           raise ValueError("Le mot de passe est obligatoire")
+
+        if len(mot_de_passe) < 6:
+           raise ValueError("Le mot de passe doit contenir au moins 6 caractères")
         
         # pour verifier si ls nom est une chaine de caractere
 
@@ -73,13 +81,18 @@ def ajout_user(nom, prenom, email, tel, role):
 
         if "@" not in email or "." not in email:
          raise ValueError("L'adresse email est invalide")
-        
+
+
+        mot_de_passe_hash = pwd_context.hash(mot_de_passe)
+
         utilisateur = User( 
                            nom=nom,
                            prenom=prenom,
                            email=email,
                            tel=tel,
                            role=role,
+                           mot_de_passe=mot_de_passe_hash,
+
                            )
         
         return create_user(utilisateur)
@@ -187,3 +200,25 @@ def patch_user_service(
         nouveau_tel,
         nouveau_role
     )
+def login_service(email, mot_de_passe):
+
+    if not email:
+        raise ValueError("L'email est obligatoire")
+
+    if not mot_de_passe:
+        raise ValueError("Le mot de passe est obligatoire")
+
+    utilisateur = identifier_user_par_email(email)
+
+    if utilisateur is None:
+        raise ValueError("Email ou mot de passe incorrect")
+
+    if utilisateur.mot_de_passe is None:
+        raise ValueError("Ce compte n'a pas encore de mot de passe défini")
+
+    if not pwd_context.verify(mot_de_passe, utilisateur.mot_de_passe):
+        raise ValueError("Email ou mot de passe incorrect")
+
+    token = creer_token(utilisateur.id, utilisateur.role)
+
+    return {"access_token": token, "token_type": "bearer"}

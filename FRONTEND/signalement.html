@@ -9,10 +9,10 @@
 </head>
 <body class="p-3">
 
-    <header class="mb-4">
-        <h1 class="h3">Signaler un problème</h1>
-        
-    </header>
+    <header class="mb-4 d-flex justify-content-between align-items-center">
+    <h1 class="h3 mb-0">Signaler un problème</h1>
+    <button id="btn-voir-signalements" class="btn btn-primary btn-sm">Liste des signalements</button>
+</header>
 
     <main>
 
@@ -38,10 +38,15 @@
             </div>
 
             <button type="submit" class="btn btn-danger w-100">Signaler</button>
+            
         </form>
 
-        <div id="message"></div>
+                <div id="message"></div>
 
+        <div id="liste-signalements"></div>
+
+    </main>
+       
     </main>
     <div class="text-center mt-4 mb-3">
     <a href="index.html" class="btn btn-primary">Retour à l'accueil</a>

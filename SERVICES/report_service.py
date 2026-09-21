@@ -5,26 +5,25 @@ from REPOSITORIES.report_repository import (
     lire_report_repository,
     identifier_report_par_id,
     modifier_report_repository,
-    supprimer_report_repository
+    supprimer_report_repository,
+    identifier_report_par_titre_et_location
 )
 
 from REPOSITORIES.user_repository import (
     identifier_user_par_id
 )
 
-from REPOSITORIES.location_repository import (
-    identifier_localisation_par_id
-)
+from SERVICES.location_service import trouver_ou_creer_localisation
 
 
 # logique métier de signalement
 
 def ajout_report_service(
-    
     titre,
     description,
     user_id,
-    location_id
+    ville,
+    quartier
 ):
 
     # Vérification du titre
@@ -47,18 +46,28 @@ def ajout_report_service(
     if user is None:
         raise ValueError("Utilisateur inexistant")
 
-    # Vérification de location
-    localisation = identifier_localisation_par_id(location_id)
+    # Vérification de ville/quartier
+    if not ville:
+        raise ValueError("La ville est obligatoire")
 
-    if localisation is None:
-        raise ValueError("Localisation inexistante")
+    if not quartier:
+        raise ValueError("Le quartier est obligatoire")
+
+    # Trouver la localisation existante ou en créer une nouvelle
+    localisation = trouver_ou_creer_localisation(ville, quartier)
+
+    # Vérifier si le même problème a déjà été signalé dans cette zone
+    doublon = identifier_report_par_titre_et_location(titre, localisation.id_l)
+
+    if doublon is not None:
+        raise ValueError("Ce problème a déjà été signalé dans cette zone")
 
     # Création du signalement
     signalement = Report(
         titre=titre,
         description=description,
         user_id=user_id,
-        location_id=location_id,
+        location_id=localisation.id_l,
         type="panne",
         statut="en cours"
     )

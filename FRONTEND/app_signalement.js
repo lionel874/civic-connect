@@ -25,3 +25,31 @@ function afficherMessage(texte, type) {
     const zoneMessage = document.getElementById("message");
     zoneMessage.innerHTML = `<div class="alert alert-${type}">${texte}</div>`;
 }
+
+
+document.getElementById("btn-voir-signalements").addEventListener("click", function() {
+    fetch("http://127.0.0.1:8000/reports/")
+        .then(response => response.json())
+        .then(data => {
+            const zone = document.getElementById("liste-signalements");
+            zone.innerHTML = "";
+
+            if (data.resultats.length === 0) {
+                zone.innerHTML = "<p class='text-muted'>Aucun signalement pour l'instant.</p>";
+                return;
+            }
+
+            data.resultats.forEach(signalement => {
+                const couleur = signalement.statut === "en cours" ? "warning" : "success";
+
+                zone.innerHTML += `
+                    <div class="card mb-2 p-3">
+                        <h5>${signalement.titre}</h5>
+                        <p>${signalement.description}</p>
+                        <p>📍 ${signalement.ville}, ${signalement.quartier}</p>
+                        <span class="badge bg-${couleur}">${signalement.statut}</span>
+                    </div>
+                `;
+            });
+        });
+});

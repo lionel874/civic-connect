@@ -1,4 +1,5 @@
-from fastapi import APIRouter, Query
+from fastapi import APIRouter, Query, Depends
+from auth import get_current_user
 from SERVICES.report_service import (ajout_report_service,
                                      lire_report_service,
                                      identifier_report_service,
@@ -15,21 +16,18 @@ router = APIRouter(
 def create_report(
     titre: str,
     description: str,
-    user_id: int,
-    location_id: int,
-    
+    ville: str,
+    quartier: str,
+    user_id: int = Depends(get_current_user),
 ):
-    """Crée un nouveau service proposé par un utilisateur.""" 
+    """Crée un nouveau signalement pour l'utilisateur connecté."""
     return ajout_report_service(
-       
         titre=titre,
         description=description,
         user_id=user_id,
-        location_id=location_id,
-        
+        ville=ville,
+        quartier=quartier,
     )
-
-
 
 @router.get("/", summary="lister les signalement")
 def get_report(type: str = Query(None, description="Filtrer par type de signalement", example="panne"),

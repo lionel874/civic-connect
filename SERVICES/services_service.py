@@ -4,17 +4,18 @@ from REPOSITORIES.service_repository import (create_service,
                                              lire_service_repository,
                                              verifier_user_repository,
                                              supprimer_service_repository,
-                                             identifier_service_par_id)
+                                             identifier_service_par_id,
+                                             )
 
-
+from SERVICES.location_service import trouver_ou_creer_localisation
 def ajout_service(
     nom_s,
     description,
     prix,
     categorie,
     user_id,
-    location_id,
-    
+    ville,
+    quartier,
 ):
 
     # Vérification du nom
@@ -43,21 +44,26 @@ def ajout_service(
 
     if prix < 0:
         raise ValueError("Le prix ne peut pas être négatif")
-    # verification de la categorie
+
+    # Vérification de la catégorie
     if categorie is None or not isinstance(categorie, str) or categorie.strip() == "":
         raise ValueError("La catégorie est obligatoire")
-    # Vérification de user_id
-    if user_id is None:
-        raise ValueError("user_id ne peut pas être None")
 
-    # Vérification de location_id
-    if location_id is None:
-        raise ValueError("location_id ne peut pas être None")
+    # Vérification de ville/quartier
+    if not ville:
+        raise ValueError("La ville est obligatoire")
+
+    if not quartier:
+        raise ValueError("Le quartier est obligatoire")
 
     user = verifier_user_repository(user_id)
 
     if user is None:
-     raise ValueError("L'utilisateur n'existe pas")
+        raise ValueError("L'utilisateur n'existe pas")
+
+    # Trouver la localisation existante ou en créer une nouvelle
+    localisation = trouver_ou_creer_localisation(ville, quartier)
+
     # Création de l'objet Service
     service = Service(
         nom_s=nom_s,
@@ -65,10 +71,9 @@ def ajout_service(
         prix=prix,
         categorie=categorie,
         user_id=user_id,
-        location_id=location_id
+        location_id=localisation.id_l
     )
 
-    # Enregistrement via le repository
     return create_service(service)
 
 

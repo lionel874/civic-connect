@@ -23,7 +23,16 @@ def identifier_user_par_id(user_id:int ):
 
         return utilisateur
       finally:
-          db.close
+          db.close()
+
+def identifier_user_par_email(email: str):
+      db = SessionLocal()
+      try:
+        utilisateur = db.query(User).filter(User.email == email).first()
+
+        return utilisateur
+      finally:
+          db.close()
 
 def modif_user_repository(user_id,
                           nom,

@@ -1,4 +1,5 @@
-from fastapi import APIRouter, Query
+from fastapi import APIRouter, Query, Depends
+from auth import get_current_user
 from SERVICES.services_service import (ajout_service,
                                        lire_service_service,
                                        supprimer_service_service)
@@ -13,23 +14,25 @@ router = APIRouter(
 
 
 
-@router.post("/",summary="Créer un service")
-def create_service_route(nom_s:str,
-                   description:str,
-                   prix: float,
-                   categorie,
-                   user_id: int,
-                   location_id: int
-                   ):
-    """Crée un nouveau service proposé par un utilisateur."""    
+@router.post("/", summary="Créer un service")
+def create_service_route(
+    nom_s: str,
+    description: str,
+    prix: float,
+    categorie: str,
+    ville: str,
+    quartier: str,
+    user_id: int = Depends(get_current_user),
+):
+    """Crée un nouveau service pour l'utilisateur connecté."""
     return ajout_service(
-        nom_s,
-        description,
-        prix,
-        categorie,
-        user_id,
-        location_id,
-        
+        nom_s=nom_s,
+        description=description,
+        prix=prix,
+        categorie=categorie,
+        user_id=user_id,
+        ville=ville,
+        quartier=quartier,
     )
 
 @router.get("/", summary="Lister les services")

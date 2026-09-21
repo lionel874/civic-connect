@@ -1,6 +1,7 @@
 from sqlalchemy import String, Integer
 from sqlalchemy.orm import Mapped, mapped_column
 from database import Base
+from typing import Optional
 
 
 
@@ -13,4 +14,6 @@ class User(Base):
     email: Mapped[str]= mapped_column(String(50), nullable=False)
     tel:Mapped[int] = mapped_column(Integer, nullable=False)
     role: Mapped[str]= mapped_column(String(15), nullable=False)
+    mot_de_passe: Mapped[Optional[str]] = mapped_column(String(255), nullable=True)
+
         

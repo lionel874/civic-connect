@@ -37,3 +37,11 @@ function afficherResultats(services) {
         `;
     });
 }
+
+document.getElementById("btn-voir-tous").addEventListener("click", function() {
+    fetch("http://127.0.0.1:8000/services/")
+        .then(response => response.json())
+        .then(data => {
+            afficherResultats(data.resultats);
+        });
+});
