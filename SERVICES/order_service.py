@@ -9,7 +9,7 @@ from REPOSITORIES.order_repository import (
 
 from REPOSITORIES.user_repository import identifier_user_par_id
 from REPOSITORIES.product_repository import identifier_produit_par_id
-
+from REPOSITORIES.order_repository import lire_order_par_user_repository
 from CLASS.order import Order
 
 # logique métier de la commande
@@ -81,6 +81,10 @@ def ajout_order(
 def lire_order_service():
 
     return lire_order_repository()
+
+# lire les commandes de l'utilisateur connecté uniquement
+def lire_mes_commandes_service(user_id: int):
+    return lire_order_par_user_repository(user_id)
 
 
 # lire une commande par id

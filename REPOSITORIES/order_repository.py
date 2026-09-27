@@ -128,3 +128,15 @@ def supprimer_order_repository(order_id: int):
 
     finally:
         db.close()
+
+
+# Lire les commandes d'un utilisateur précis
+def lire_order_par_user_repository(user_id: int):
+
+    db = SessionLocal()
+
+    try:
+        return db.query(Order).filter(Order.user_id == user_id).all()
+
+    finally:
+        db.close()
